@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  cpy:
+    build: .
+    container_name: cpy
+    restart: always
+    volumes:
+      - cpy_data:/app/data
+    networks:
+      - traefik_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cpy.rule=Host(`cpy.thefounders.cafe`)"
+      - "traefik.http.routers.cpy.entrypoints=https"
+      - "traefik.http.routers.cpy.tls=true"
+      - "traefik.http.routers.cpy.tls.certresolver=letsencrypt"
+      - "traefik.http.services.cpy.loadbalancer.server.port=3000"
+
+volumes:
+  cpy_data:
+
+networks:
+  traefik_net:
+    external: true
+    name: web # Replace this with your Traefik network name if it is different (e.g. proxy, public, traefik)
