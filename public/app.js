@@ -121,7 +121,11 @@ btnCloseDrawer.addEventListener('click', () => {
 async function loadNote() {
   setStatus('loading');
   try {
-    const res = await fetch(`/api/note/${slug}`);
+    const res = await fetch(`/api/note/${slug}`, {
+      headers: {
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
     if (!res.ok) throw new Error('Failed to fetch note');
     
     const data = await res.json();
@@ -144,7 +148,8 @@ async function saveNote() {
     const res = await fetch(`/api/note/${slug}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Bypass-Tunnel-Reminder': 'true'
       },
       body: JSON.stringify({ content: editor.value })
     });
