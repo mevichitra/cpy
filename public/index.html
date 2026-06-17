@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cpy.sh | Zero-login notepad with CLI support</title>
+  <meta name="description" content="Paste, edit, and retrieve notes in your browser or from your terminal with curl. Zero registration, multi-level slugs, fast and simple.">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <header>
+    <a href="/" class="logo-group">
+      <div class="logo-icon">>c</div>
+      <span class="logo-text">cpy.sh</span>
+    </a>
+    <div class="header-actions">
+      <button class="btn" onclick="document.getElementById('slug').focus()">Start Writing</button>
+    </div>
+  </header>
+
+  <main class="main-hero">
+    <h1 class="hero-title">Zero-login Notepad<br>Built for Browser & Terminal</h1>
+    <p class="hero-subtitle">
+      Just type a custom URL slug and write. Need your notes in the terminal? Simply use <code>curl</code> to retrieve or update them instantly.
+    </p>
+
+    <!-- Go to slug form -->
+    <form class="slug-form" id="slugForm">
+      <div class="slug-prefix">cpy.sh/</div>
+      <input type="text" id="slug" class="slug-input" placeholder="project-notes" autocomplete="off" required spellcheck="false">
+      <button type="submit" class="btn btn-primary">Go</button>
+    </form>
+
+    <!-- Interactive terminal demo -->
+    <div class="terminal-container">
+      <div class="terminal-header">
+        <div class="terminal-dots">
+          <span class="terminal-dot dot-red"></span>
+          <span class="terminal-dot dot-yellow"></span>
+          <span class="terminal-dot dot-green"></span>
+        </div>
+        <div class="terminal-title">bash</div>
+      </div>
+      <div class="terminal-body" id="termBody">
+        <!-- Will be typed out by JS -->
+      </div>
+    </div>
+
+    <!-- Recently Visited Pages (via browser local storage) -->
+    <div class="history-section" id="historySection" style="display: none;">
+      <h3 class="history-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Your Recent Slugs
+      </h3>
+      <div class="history-list" id="historyList">
+        <!-- Loaded via JS -->
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2026 cpy.sh. Standard copy/paste, terminal-ready.
+  </footer>
+
+  <script>
+    // Handle form submission
+    document.getElementById('slugForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const slugVal = document.getElementById('slug').value.trim();
+      if (slugVal) {
+        // Sanitize: replace spaces with dashes, remove leading/trailing slashes
+        const cleanSlug = slugVal
+          .replace(/^\/+|\/+$/g, '')
+          .replace(/\s+/g, '-');
+        window.location.href = '/' + cleanSlug;
+      }
+    });
+
+    // Populate history from local storage
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem('cpy_history') || '[]');
+      const container = document.getElementById('historySection');
+      const list = document.getElementById('historyList');
+      
+      if (history.length > 0) {
+        container.style.display = 'block';
+        list.innerHTML = history.map(item => {
+          // Format date briefly
+          const date = new Date(item.time);
+          const timeStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + 
+                          date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+          return `
+            <a href="/${item.slug}" class="history-item">
+              <span class="history-slug">/${item.slug}</span>
+              <span class="history-time">${timeStr}</span>
+            </a>
+          `;
+        }).join('');
+      } else {
+        container.style.display = 'none';
+      }
+    }
+
+    loadHistory();
+
+    // Typewriter terminal animation
+    const termLines = [
+      { type: 'cmd', text: 'curl http://cpy.sh/test-notes' },
+      { type: 'out', text: '[Empty: page does not exist yet]' },
+      { type: 'cmd', text: 'curl -d "Update via terminal!" http://cpy.sh/test-notes' },
+      { type: 'out', text: 'Successfully saved text to slug: /test-notes' },
+      { type: 'cmd', text: 'curl http://cpy.sh/test-notes' },
+      { type: 'out', text: 'Update via terminal!' }
+    ];
+
+    const termBody = document.getElementById('termBody');
+    let lineIdx = 0;
+    
+    function appendTerminalLine() {
+      if (lineIdx >= termLines.length) {
+        // Reset after a delay
+        setTimeout(() => {
+          termBody.innerHTML = '';
+          lineIdx = 0;
+          appendTerminalLine();
+        }, 5000);
+        return;
+      }
+
+      const line = termLines[lineIdx];
+      const div = document.createElement('div');
+      div.className = 'term-line';
+      
+      if (line.type === 'cmd') {
+        div.innerHTML = '<span class="term-prompt">$ </span><span class="term-cmd"></span>';
+        termBody.appendChild(div);
+        const cmdSpan = div.querySelector('.term-cmd');
+        let charIdx = 0;
+        
+        function typeChar() {
+          if (charIdx < line.text.length) {
+            cmdSpan.textContent += line.text.charAt(charIdx);
+            charIdx++;
+            setTimeout(typeChar, 40 + Math.random() * 40);
+          } else {
+            lineIdx++;
+            setTimeout(appendTerminalLine, 800);
+          }
+        }
+        typeChar();
+      } else {
+        div.innerHTML = `<span class="term-out">${line.text}</span>`;
+        termBody.appendChild(div);
+        lineIdx++;
+        setTimeout(appendTerminalLine, 1200);
+      }
+      
+      // Auto scroll terminal
+      termBody.scrollTop = termBody.scrollHeight;
+    }
+
+    // Start terminal animation
+    setTimeout(appendTerminalLine, 1000);
+  </script>
+</body>
+</html>

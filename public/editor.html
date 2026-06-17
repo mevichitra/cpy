@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor | cpy.sh</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <header>
+    <a href="/" class="logo-group">
+      <div class="logo-icon">>c</div>
+      <span class="logo-text">cpy.sh</span>
+    </a>
+    
+    <div class="editor-meta">
+      <div class="breadcrumbs" id="breadcrumbs">
+        <!-- Will be populated dynamically by JS -->
+      </div>
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot"></span>
+        <span class="status-text">Loading...</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn" id="btnCopyText" title="Copy note text to clipboard">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copy Text
+      </button>
+      <button class="btn" id="btnToggleCli" title="Toggle Terminal / curl commands help">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 17 10 11 4 5"/>
+          <line x1="12" y1="19" x2="20" y2="19"/>
+        </svg>
+        Terminal Access
+      </button>
+    </div>
+  </header>
+
+  <main class="editor-container">
+    <div class="textarea-wrapper">
+      <textarea id="editor" class="editor-textarea" placeholder="Start writing anything..." spellcheck="false" autofocus></textarea>
+    </div>
+
+    <!-- Terminal commands slider -->
+    <div class="cli-drawer" id="cliDrawer">
+      <div class="drawer-header">
+        <h3 class="drawer-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"/>
+            <line x1="12" y1="19" x2="20" y2="19"/>
+          </svg>
+          Terminal Access
+        </h3>
+        <button class="drawer-close" id="btnCloseDrawer">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5;">
+          You can interact with this note directly from your terminal. Use these commands to retrieve, pipe, or upload files:
+        </p>
+
+        <!-- Command 1: GET -->
+        <div class="cli-example-box">
+          <div class="example-title">Retrieve Text (GET)</div>
+          <div class="code-snippet-container">
+            <pre class="code-snippet" id="cmdGet">curl http://localhost:3000/slug</pre>
+            <button class="btn-copy-snippet" onclick="copySnippet('cmdGet')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Command 2: POST Text -->
+        <div class="cli-example-box">
+          <div class="example-title">Update Text (POST)</div>
+          <div class="code-snippet-container">
+            <pre class="code-snippet" id="cmdPost">curl -d "New text" http://localhost:3000/slug</pre>
+            <button class="btn-copy-snippet" onclick="copySnippet('cmdPost')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Command 3: Pipe content -->
+        <div class="cli-example-box">
+          <div class="example-title">Pipe Output to Note</div>
+          <div class="code-snippet-container">
+            <pre class="code-snippet" id="cmdPipe">echo "My content" | curl -d @- http://localhost:3000/slug</pre>
+            <button class="btn-copy-snippet" onclick="copySnippet('cmdPipe')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Command 4: Upload File -->
+        <div class="cli-example-box">
+          <div class="example-title">Upload File Contents</div>
+          <div class="code-snippet-container">
+            <pre class="code-snippet" id="cmdUpload">curl --data-binary @file.txt http://localhost:3000/slug</pre>
+            <button class="btn-copy-snippet" onclick="copySnippet('cmdUpload')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
