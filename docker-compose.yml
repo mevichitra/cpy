@@ -5,6 +5,8 @@ services:
     build: .
     container_name: cpy
     restart: always
+    ports:
+      - "3000:3000"
     volumes:
       - cpy_data:/app/data
     networks:
